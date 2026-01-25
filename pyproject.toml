@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotics_in_agriculture_research"
+version = "0.1.0"
+description = "This is codebase for our sem 8, capstone project i.e. Robotics in Agriculture. But here our approach is little different, we are researching the before part, I mean we will train and research ML models such that it would be later used to support robots in maintaining optimal environment for maximum yield."
+readme = "README.md"
+authors = [
+    {name = "Suraj Airi", email = "surajairi.ml@gmail.com"}
+]
+license = {text = "MIT"}
+requires-python = ">=3.12"
+dependencies = [
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "matplotlib",
+    "jupyter",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "black",
+    "isort",
+    "flake8",
+    "mypy",
+]
+
+[tool.black]
+line-length = 88
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 88
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
