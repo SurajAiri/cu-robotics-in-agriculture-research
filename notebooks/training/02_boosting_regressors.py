@@ -4,27 +4,25 @@ import joblib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import os
-from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
 from sklearn.preprocessing import StandardScaler, OneHotEncoder
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
-from sklearn.tree import DecisionTreeRegressor
 from sklearn.metrics import mean_squared_error, r2_score, mean_absolute_error
-from sklearn.linear_model import ElasticNet
-from sklearn.svm import SVR
-from sklearn.neighbors import KNeighborsRegressor
-from sklearn.ensemble import AdaBoostRegressor, ExtraTreesRegressor
+
+# Gradient Boosting Libraries
+from xgboost import XGBRegressor
+from lightgbm import LGBMRegressor
+from catboost import CatBoostRegressor
 
 # --- Configuration ---
 DATA_PATH = "data/processed/crop_yield_cleaned_base.csv"
-MODEL_SAVE_DIR = "models/scikit_regressors"
-nickname = "scikit_regressors_exploration"
+MODEL_SAVE_DIR = "models/boosting_regressors"
+NICKNAME = "boosting_exploration"
 os.makedirs(MODEL_SAVE_DIR, exist_ok=True)
 
 
-def train_evaluate_models():
+def train_evaluate_boosting_models():
     # 1. Load Data
     if not os.path.exists(DATA_PATH):
         raise FileNotFoundError(f"{DATA_PATH} not found. Run clean/prep scripts first.")
@@ -36,12 +34,14 @@ def train_evaluate_models():
     X = df.drop(columns=[target])
     y = df[target]
 
-    # 2. Split Data (Stratify by State for better distribution)
+    # 2. Split Data
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=X["State"]
     )
 
     # 3. Define Preprocessing
+    # Note: specific boosters can handle categories natively, but for consistent
+    # pipeline comparison and simplicity, we'll use OHE here.
     numeric_features = [
         "Area",
         "Annual_Rainfall",
@@ -62,31 +62,22 @@ def train_evaluate_models():
         remainder="drop",
     )
 
-    # 4. Define Models to Explore
-
+    # 4. Define Boosting Models
     models = {
-        "Linear Regression": LinearRegression(),
-        "Ridge": Ridge(alpha=1.0),
-        "Lasso": Lasso(alpha=0.1),
-        "Elastic Net": ElasticNet(alpha=0.1, l1_ratio=0.5, random_state=42),
-        "Decision Tree": DecisionTreeRegressor(random_state=42),
-        "Random Forest": RandomForestRegressor(
-            n_estimators=100, random_state=42, n_jobs=-1
+        "XGBoost": XGBRegressor(
+            n_estimators=500, learning_rate=0.05, n_jobs=-1, random_state=42
         ),
-        "Extra Trees": ExtraTreesRegressor(
-            n_estimators=100, random_state=42, n_jobs=-1
+        "LightGBM": LGBMRegressor(
+            n_estimators=500, learning_rate=0.05, n_jobs=-1, random_state=42, verbose=-1
         ),
-        "Gradient Boosting": GradientBoostingRegressor(
-            n_estimators=100, random_state=42
+        "CatBoost": CatBoostRegressor(
+            iterations=500, learning_rate=0.05, depth=6, silent=True, random_state=42
         ),
-        "AdaBoost": AdaBoostRegressor(n_estimators=100, random_state=42),
-        "SVR": SVR(kernel="rbf", C=1.0),
-        "KNN": KNeighborsRegressor(n_neighbors=5),
     }
 
     results = []
 
-    print("\n--- Training & Evaluating Models ---")
+    print("\n--- Training & Evaluating Boosting Models ---")
     for name, model in models.items():
         # Create Pipeline
         pipeline = Pipeline(
@@ -95,32 +86,40 @@ def train_evaluate_models():
 
         # Train
         print(f"Training {name}...")
-        pipeline.fit(X_train, y_train)
+        try:
+            pipeline.fit(X_train, y_train)
 
-        # Predict
-        y_pred = pipeline.predict(X_test)
+            # Predict
+            y_pred = pipeline.predict(X_test)
 
-        # Evaluate
-        mse = mean_squared_error(y_test, y_pred)
-        rmse = np.sqrt(mse)
-        mae = mean_absolute_error(y_test, y_pred)
-        r2 = r2_score(y_test, y_pred)
+            # Evaluate
+            mse = mean_squared_error(y_test, y_pred)
+            rmse = np.sqrt(mse)
+            mae = mean_absolute_error(y_test, y_pred)
+            r2 = r2_score(y_test, y_pred)
 
-        results.append(
-            {
-                "Model": name,
-                "RMSE": rmse,
-                "MAE": mae,
-                "R2": r2,
-                "Pipeline_Object": pipeline,
-            }
-        )
+            results.append(
+                {
+                    "Model": name,
+                    "RMSE": rmse,
+                    "MAE": mae,
+                    "R2": r2,
+                    "Pipeline_Object": pipeline,
+                }
+            )
 
-        print(f"  RMSE: {rmse:.4f}, R2: {r2:.4f}")
+            print(f"  RMSE: {rmse:.4f}, R2: {r2:.4f}")
+
+        except Exception as e:
+            print(f"  Error training {name}: {e}")
 
     # 5. Summary & Visualization
+    if not results:
+        print("No models trained successfully.")
+        return
+
     results_df = pd.DataFrame(results).sort_values(by="RMSE")
-    print("\n--- Final Leaderboard ---")
+    print("\n--- Final Leaderboard (Boosting) ---")
     print(results_df[["Model", "RMSE", "MAE", "R2"]])
 
     # Save best model
@@ -134,18 +133,18 @@ def train_evaluate_models():
     joblib.dump(best_pipeline, save_path)
     print(f"\nSaved best model ({best_model_name}) to {save_path}")
 
-    # Plot
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x="RMSE", y="Model", data=results_df, palette="viridis")
-    plt.title("Model Comparison (RMSE Lower is Better)")
-    plt.show()
-
-    # also save the metrics to a csv
+    # Save metrics CSV
     results_df[["Model", "RMSE", "MAE", "R2"]].to_csv(
-        os.path.join(MODEL_SAVE_DIR, f"model_performance_summary_{nickname}.csv"),
+        os.path.join(MODEL_SAVE_DIR, f"model_performance_summary_{NICKNAME}.csv"),
         index=False,
     )
 
+    # Plot
+    plt.figure(figsize=(8, 5))
+    sns.barplot(x="RMSE", y="Model", data=results_df, palette="magma")
+    plt.title("Boosting Model Comparison (RMSE Lower is Better)")
+    plt.show()
+
 
 if __name__ == "__main__":
-    train_evaluate_models()
+    train_evaluate_boosting_models()
