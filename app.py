@@ -232,7 +232,7 @@ def display_recommendations(
         (yield_improvement / base_yield * 100) if base_yield > 0 else 0
     )
 
-    st.subheader("🤖 Robot Decision Support System")
+    st.subheader("Robot Decision Support System")
 
     # Yield improvement summary
     col1, col2, col3 = st.columns(3)
@@ -250,10 +250,10 @@ def display_recommendations(
     st.divider()
 
     if not recommendations:
-        st.success("✅ Current conditions are already optimal! No changes recommended.")
+        st.success("Current conditions are already optimal! No changes recommended.")
         return
 
-    st.markdown("### 📋 Recommended Actions")
+    st.markdown("### Recommended Actions")
 
     for rec in recommendations:
         with st.container():
@@ -270,27 +270,27 @@ def display_recommendations(
             if "Irrigation" in rec["action_name"]:
                 if rec["direction"] == "increase":
                     st.info(
-                        "💧 **Irrigation Robot**: Increase water supply to field sections."
+                        "**Irrigation Robot**: Increase water supply to field sections."
                     )
                 else:
-                    st.info("💧 **Irrigation Robot**: Reduce watering frequency.")
+                    st.info("**Irrigation Robot**: Reduce watering frequency.")
 
             elif "Fertilizer" in rec["action_name"]:
                 if rec["direction"] == "increase":
                     st.info(
-                        "🌱 **Fertilizer Robot**: Apply additional fertilizer at recommended rate."
+                        "**Fertilizer Robot**: Apply additional fertilizer at recommended rate."
                     )
                 else:
                     st.info(
-                        "🌱 **Fertilizer Robot**: Reduce fertilizer application in next cycle."
+                        "**Fertilizer Robot**: Reduce fertilizer application in next cycle."
                     )
 
             elif "Pesticide" in rec["action_name"]:
                 if rec["direction"] == "increase":
-                    st.info("🛡️ **Pesticide Robot**: Increase pest control measures.")
+                    st.info("**Pesticide Robot**: Increase pest control measures.")
                 else:
                     st.info(
-                        "🛡️ **Pesticide Robot**: Reduce pesticide usage - current levels sufficient."
+                        "**Pesticide Robot**: Reduce pesticide usage - current levels sufficient."
                     )
 
             st.divider()
@@ -299,7 +299,7 @@ def display_recommendations(
 def main():
     st.set_page_config(page_title="Crop Yield Optimizer", page_icon="🌾", layout="wide")
 
-    st.title("🌾 Crop Yield Prediction & Robot Decision Support")
+    st.title("Crop Yield Prediction & Robot Decision Support")
     st.markdown("""
     **Phase-II: Robotic Decision Support & Environment Optimization**
     
@@ -328,7 +328,7 @@ def main():
     st.sidebar.success(f"Using: {models[f'{model_choice}_name']}")
 
     # --- Input Section ---
-    st.header("📝 Enter Current Field Conditions")
+    st.header("Enter Current Field Conditions")
 
     col1, col2 = st.columns(2)
 
@@ -386,7 +386,7 @@ def main():
     st.divider()
 
     # --- Optimization Settings ---
-    with st.expander("⚙️ Optimization Settings", expanded=False):
+    with st.expander("Optimization Settings", expanded=False):
         st.markdown("Adjust variation ranges for environment optimization:")
 
         col1, col2, col3 = st.columns(3)
@@ -441,7 +441,7 @@ def main():
 
     # --- Run Optimization ---
     if st.button(
-        "🚀 Optimize & Generate Recommendations",
+        "Optimize & Generate Recommendations",
         type="primary",
         use_container_width=True,
     ):
@@ -470,7 +470,7 @@ def main():
         display_recommendations(recommendations, base_yield, optimal_yield)
 
         # Show detailed results in expandable section
-        with st.expander("📊 Detailed Analysis", expanded=False):
+        with st.expander("Detailed Analysis", expanded=False):
             st.subheader("All Configurations & Predictions")
 
             results_df = variations_df.copy()
