@@ -40,8 +40,16 @@ XGBoost is the current champion model. Extra Trees is kept as a rollback model b
 The following figures summarize the final model comparison:
 
 - [R2 score comparison](figures/final_model_r2_score.png)
+
+![R2 score comparison](figures/final_model_r2_score.png)
+
 - [Error metrics comparison](figures/final_model_error_metrics.png)
+
+![Error metrics comparison](figures/final_model_error_metrics.png)
+
 - [Combined performance comparison](figures/final_model_performance_comparison.png)
+
+![Combined performance comparison](figures/final_model_performance_comparison.png)
 
 ## Supporting Files
 
