@@ -1,63 +1,98 @@
 # Robotics In Agriculture Research
 
-This is codebase for our sem 8, capstone project i.e. Robotics in Agriculture. But here our approach is little different, we are researching the before part, I mean we will train and research ML models such that it would be later used to support robots in maintaining optimal environment for maximum yield.
+This repository documents the research pipeline behind a crop yield prediction system for a future robotics workflow. The current scope focuses on the machine learning side: preparing agricultural data, training and evaluating regression models, and using the best model to power a phase-II decision support app that recommends environment adjustments for higher predicted yield.
 
-## Getting Started
+## What This Project Covers
+
+- Agricultural data collection and cleaning
+- Feature engineering and preprocessing
+- Training and comparing multiple regression models
+- Hyperparameter tuning and model selection
+- A Streamlit-based phase-II optimization app for crop and environment recommendations
+
+## Documentation Map
+
+- [Architecture overview](docs/architecture.md)
+- [Phase I: Model training and selection](docs/phase-1-model-training.md)
+- [Phase II: Robotic decision support](docs/phase-2-robotic-decision-support.md)
+
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.12
-- uv (package manager)
+- Python 3.12+
+- uv
 
-### Installation
+### Install
 
-1. Clone this repository:
 ```bash
-git clone <repository-url>
-cd robotics_in_agriculture_research
-```
-
-2. Set up the Python environment:
-```bash
-
 uv venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate
 uv pip install -e .
-
 ```
 
-## Project Organization
+### Run the Phase-II app
 
-    ├── LICENSE
-    ├── README.md          <- The top-level README for developers using this project.
-    ├── data
-    │   ├── external       <- Data from third party sources.
-    │   ├── interim        <- Intermediate data that has been transformed.
-    │   ├── processed      <- The final, canonical data sets for modeling.
-    │   └── raw            <- The original, immutable data dump.
-    │
-    ├── models             <- Trained and serialized models, model predictions, or model summaries
-    │
-    ├── notebooks          <- Jupyter notebooks. Naming convention is a number (for ordering),
-    │                         the creator's initials, and a short `-` delimited description, e.g.
-    │                         `1.0-sa-initial-data-exploration`.
-    │
-    ├── pyproject.toml     <- The requirements file for reproducing the analysis environment
-    │
-    ├── robotics_in_agriculture_research  <- Source code for use in this project.
-    │   ├── __init__.py    <- Makes robotics_in_agriculture_research a Python module
-    │   │
-    │   ├── data           <- Scripts to download or generate data
-    │   │
-    │   ├── models         <- Scripts to train models and make predictions
-    │   │
-    │   └── utils          <- Utility functions
-    │
-    └── tests              <- Test files
+```bash
+uv run streamlit run app.py
+```
+
+### Run tests
+
+```bash
+uv run pytest
+```
+
+## End-to-End Flow
+
+1. Agricultural data is collected and selected from the Kaggle crop yield dataset.
+2. Raw data is cleaned, validated, encoded, and normalized into processed datasets.
+3. Multiple regression models are trained and tuned on the processed data.
+4. The best models are stored as production artifacts in `models/production`.
+5. The Streamlit app loads the production pipelines and evaluates environment variations.
+6. The app recommends the configuration with the highest predicted yield.
+
+## Final Model Summary
+
+The latest evaluation in [results/hypertuned_info.md](results/hypertuned_info.md) records the following test-set performance:
+
+| Model         |   RMSE |    MAE |     R2 |
+| ------------- | -----: | -----: | -----: |
+| Random Forest | 0.3885 | 0.2151 | 0.8315 |
+| Extra Trees   | 0.3636 | 0.1926 | 0.8524 |
+| XGBoost       | 0.3519 | 0.1938 | 0.8617 |
+| CatBoost      | 0.3653 | 0.2084 | 0.8511 |
+
+The current champion model used by the app is XGBoost, with Extra Trees kept as the rollback option.
+
+## Repository Layout
+
+```text
+├── app.py
+├── configs/
+├── data/
+├── docs/
+├── models/
+├── notebooks/
+├── reports/
+├── results/
+├── scripts/
+├── src/
+└── tests/
+```
+
+## Data Source
+
+The dataset documentation lives in [data/source.md](data/source.md). It uses the Agricultural Crop Yield in Indian States dataset and covers crop, year, season, state, area, production, rainfall, fertilizer, pesticide, and yield.
+
+## Production Assets
+
+- Champion model: [models/production/champion_xgboost_pipeline.joblib](models/production/champion_xgboost_pipeline.joblib)
+- Rollback model: [models/production/rollback_extratrees_pipeline.joblib](models/production/rollback_extratrees_pipeline.joblib)
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License. See [LICENSE](LICENSE).
 
 ## Author
 
